@@ -1,4 +1,7 @@
 from connection import local_db
+import numpy as np
+
+WSIZE = 5
 
 def main():
     db = local_db()
@@ -14,32 +17,40 @@ def main():
     """)
     data = db.cur.fetchall()
 
-    for id in data:
-        db.cur.execute("""
-        SELECT
+    # Retrieve all data for each user
+    ids = "("
+    for item in data:
+        ids += "\""+item[0]+"\","
+    ids = ids[:-1] + ")"
+    
+    db.cur.execute("""
+        SELECT 
             *
-        FROM
-            last_10_history
-        WHERE gp_id = %s
-        """, (id[0],))
-        user = db.cur.fetchall()
-        print(user)
+        FROM last_10_history
+        WHERE gp_id IN
+    """+ ids)
+    res = db.cur.fetchall()
+    
+    # Insert retrieved data into a dictionary
+    rtps = {}
+    for idx in range(len(res)):
+        gp_id = res[idx][1]
+        if gp_id not in rtps:
+            rtps[gp_id] = []
+        rtps[gp_id].append(res[idx][5])
+
+    # Calculate moving average for each user
+    for key in rtps:
+        i=0
+        moving_averages = []
+        while i < len(rtps[key]) - WSIZE + 1:
+            window_average = round(np.sum(rtps[key][i:i+WSIZE]) / WSIZE, 2)
+            moving_averages.append(window_average)
+            i += 1
+        print(key, moving_averages)
 
     db.conn.close()
 
 if __name__ == "__main__":
     main()
-
-
-    # ids = "("
-    # for item in data:
-    #     ids += "\""+item[0]+"\","
-    # ids = ids[:-1] + ")"
-    
-    # db.cur.execute("""
-    #     SELECT 
-    #         *
-    #     FROM last_10_history
-    #     WHERE gp_id IN
-    # """+ ids)
-    # res = db.cur.fetchall()
+        
