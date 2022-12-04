@@ -1,42 +1,8 @@
 from datetime import date, timedelta
 
-def get_nicknames(cur_local, conn_local, cur_gp):
-    print("Getting nicknames")
-    cur_local.execute("""
-        SELECT
-            DISTINCT gp_id
-        FROM win_history
-        WHERE gp_id NOT IN(
-            SELECT gp_id
-            FROM account_details
-            )
-    """)
-    data = cur_local.fetchall()
-    ids = "("
-    for item in data:
-        ids += "\""+item[0]+"\","
-    ids = ids[:-1] + ")"
-    cur_gp.execute("""
-        SELECT 
-            gp_id,
-            nickname
-        FROM account
-        WHERE gp_id IN
-    """ + ids)
-    res = cur_gp.fetchall()
-    query = """
-        INSERT INTO account_details(
-            gp_id,
-            nickname
-        )
-        VALUES(%s,%s)
-    """
-    cur_local.executemany(query, res)
-    conn_local.commit()
-
 def get_positive_rtps(cur_stats, cur_local, conn_local, cur_gp):
-    cur_date = date(2022, 6, 1)
-    end_date = date(2022, 11, 17)
+    cur_date = date(2022, 9, 1)
+    end_date = date(2022, 9, 30)
     delta = timedelta(days=1)
     print("Starting data collection.\n")
     while cur_date <= end_date:
@@ -160,7 +126,7 @@ def get_today_rtps(cur_stats, cur_local, conn_local, cur_gp):
         ids += "\""+item[0]+"\","
     ids = ids[:-1] + ")"
     cur_gp.execute("""
-        SELECT 
+        SELECT
             gp_id,
             nickname
         FROM account
@@ -177,3 +143,36 @@ def get_today_rtps(cur_stats, cur_local, conn_local, cur_gp):
     cur_local.executemany(query, res)
     conn_local.commit()
 
+# def get_nicknames(cur_local, conn_local, cur_gp):
+#     print("Getting nicknames")
+#     cur_local.execute("""
+#         SELECT
+#             DISTINCT gp_id
+#         FROM win_history
+#         WHERE gp_id NOT IN(
+#             SELECT gp_id
+#             FROM account_details
+#             )
+#     """)
+#     data = cur_local.fetchall()
+#     ids = "("
+#     for item in data:
+#         ids += "\""+item[0]+"\","
+#     ids = ids[:-1] + ")"
+#     cur_gp.execute("""
+#         SELECT 
+#             gp_id,
+#             nickname
+#         FROM account
+#         WHERE gp_id IN
+#     """ + ids)
+#     res = cur_gp.fetchall()
+#     query = """
+#         INSERT INTO account_details(
+#             gp_id,
+#             nickname
+#         )
+#         VALUES(%s,%s)
+#     """
+#     cur_local.executemany(query, res)
+#     conn_local.commit()
