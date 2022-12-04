@@ -4,9 +4,11 @@ import configparser
 from db import Database
 from sshtunnel import SSHTunnelForwarder
 
+# Import database configs
 vars = configparser.ConfigParser()
 vars.read("vars.cfg")
 
+# PostgreSQL SSH Tunnel connection (eg. for db_stats)
 def ssh_postgresdb(db):
     tunnel = SSHTunnelForwarder(
         (vars[db]["ssh_host"], int(vars[db]["ssh_port"])),
@@ -24,6 +26,7 @@ def ssh_postgresdb(db):
     )
     return Database(conn.cursor(), conn)
 
+# MySQL SSH Tunnel connection (for db_gp, nickname retrieval)
 def ssh_mysqldb(db):
     tunnel = SSHTunnelForwarder(
         (vars[db]["ssh_host"], int(vars[db]["ssh_port"])),
@@ -41,6 +44,7 @@ def ssh_mysqldb(db):
     )
     return Database(conn.cursor(), conn)
 
+# Local connection
 def local_db():
     conn = mysql.connector.connect(
         host=vars["DB_LOCAL"]["sql_hostname"],
