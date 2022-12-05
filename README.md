@@ -1,6 +1,9 @@
+
 # Searchlight
+
 Retrieves data from Casino databases that can be used to detect game abuse.
 Requires Python 3.10.8, MySQL Server 5.7
+
 ### Usage
 
 1. Insert ssh keys into ./credentials and create vars.cfg
@@ -9,7 +12,26 @@ Requires Python 3.10.8, MySQL Server 5.7
 4. Run tables.sql
 5. Run script using `python main.py`
 
-### Table Structures
+### Abuser Detection Method
+
+Abusers are found using the user's moving average of RTP. If a user has all MAs > 1, the gp_id is flagged.
+For examples with N = 5 and M = 6 for a total of 10 days examined:
+
+```
+Flagged User (min(moving_averages) == 1.07)
+GP ID - YUiWs219nwSqchbdLHdpwWt1 
+Data Set - [1.31, 0.52, 1.21, 1.2, 1.69, 0.86, 1.95, 1.05, 0.8, 0.7] 
+Moving Averages - [1.19, 1.1, 1.38, 1.35, 1.27, 1.07]
+```
+
+```
+Not Flagged User (min(moving_averages) == 0.8)
+GP ID - ZZ9Qua4FTMl76UL7xLo5efrF 
+Data Set - [0.65, 1.33, 1.16, 2.0, 0.67, 0.51, 0.73, 0.49, 1.61, 1.07] 
+Moving Averages - [1.16, 1.13, 1.01, 0.88, 0.8, 0.88]
+```
+
+### Database Table Structures
 
 ```
 CREATE TABLE IF NOT EXISTS win_history (
